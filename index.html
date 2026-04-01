@@ -38,7 +38,6 @@
             margin: 0;
         }
 
-        /* Splash */
         #splash-screen {
             position: fixed;
             top: 0;
@@ -181,7 +180,6 @@
             filter: blur(10px);
         }
 
-        /* Layout */
         #app-content {
             display: flex;
             width: 100%;
@@ -272,28 +270,6 @@
         @keyframes panel-glow {
             from { box-shadow: 6px 6px 0px rgba(0,0,0,0.04); }
             to { box-shadow: 0 0 15px rgba(210, 91, 91, 0.2); }
-        }
-
-        .filter-health-card {
-            background: #fdfdfd;
-            border-color: var(--ok-air-blue);
-        }
-
-        .filter-bar-container {
-            width: 100%;
-            height: 10px;
-            background: #eee;
-            border: 2px solid var(--border-ink);
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
-
-        .filter-bar-fill {
-            width: 85%;
-            height: 100%;
-            background: linear-gradient(90deg, #5B9DD2, #67AC7B);
-            transition: width 1s;
         }
 
         .vibe-hero {
@@ -525,7 +501,6 @@
             line-height: 1.4;
         }
 
-        /* Map */
         #viewport {
             flex-grow: 1;
             position: relative;
@@ -641,11 +616,6 @@
             50% { transform: translateY(-12px) rotate(2deg); }
         }
 
-        @keyframes fire-flicker {
-            from { transform: scale(1) rotate(-5deg); }
-            to { transform: scale(1.2) rotate(5deg); }
-        }
-
         #footer-credits {
             position: absolute;
             bottom: 25px;
@@ -706,18 +676,6 @@
                     </p>
                 </div>
 
-                <div class="module-card filter-health-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 data-i18n="filter_health" style="font-size:1rem;">Filter Health</h3>
-                        <div style="font-weight:900; font-size:1.2rem; color:var(--ok-air-blue);">85%</div>
-                    </div>
-                    <div class="filter-bar-container"><div class="filter-bar-fill"></div></div>
-                    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.75rem; font-weight:700; color:var(--text-sub);">
-                        <span data-i18n="filter_status">Status: Excellent</span>
-                        <span data-i18n="filter_replace">Est. Replace: 42 Days</span>
-                    </div>
-                </div>
-
                 <div class="vibe-hero alert-active"
                      onmouseenter="document.getElementById('huffy-hero-img').src='Huffy_Bite.png'"
                      onmouseleave="document.getElementById('huffy-hero-img').src='Huffy.png'">
@@ -731,7 +689,7 @@
 
                 <div class="module-card">
                     <div style="font-size: 0.95rem; font-weight: 800; border-bottom: 2px dashed #eee; padding-bottom: 12px; margin-bottom: 18px;">
-                        📍 <span data-i18n="sensor_loc">Sensor at: Our Center</span>
+                        📍 <span data-i18n="sensor_loc">Air Quality at Our Center</span>
                     </div>
 
                     <div class="aqi-pill-container">
@@ -741,7 +699,7 @@
                             <span class="pill-unit">µg/m³</span>
                             <img src="Huffy.png" alt="Huffy" class="pill-img" onerror="this.style.display='none'">
                             <div class="pill-tooltip" data-i18n="tooltip_outdoor">
-                                This outdoor air level is very unhealthy and may trigger smoke-related symptoms in young children.
+                                May cause coughing, throat irritation, and breathing discomfort, especially in young children.
                             </div>
                         </div>
 
@@ -752,7 +710,7 @@
                             <img src="Puffy.png" alt="Puffy" class="pill-img" onerror="this.style.display='none'">
                             <img src="Sparkles.png" alt="S" class="sparkle-decor" onerror="this.style.display='none'">
                             <div class="pill-tooltip" data-i18n="tooltip_indoor">
-                                Indoor air is much cleaner than outdoors, showing that the HEPA filtration is protecting the classroom.
+                                Safer for daily breathing and helps reduce exposure to harmful particles, especially for young children.
                             </div>
                         </div>
                     </div>
@@ -767,6 +725,7 @@
                         <h3 style="color:var(--ok-air-blue); font-size:1rem;" data-i18n="guide_title">Teacher's Guide</h3>
                         <button class="tts-btn" onclick="speakAll()" title="Speak All">🔊</button>
                     </div>
+
                     <div style="display:flex; gap:12px; margin-bottom:12px; align-items: center;">
                         <button class="tts-btn" style="width:28px; height:28px; font-size:0.7rem;" onclick="speak('seal_nest')">▶</button>
                         <div style="font-size:0.85rem; font-weight:600;">
@@ -774,11 +733,20 @@
                             <span data-i18n="seal_nest_d">Check windows are closed!</span>
                         </div>
                     </div>
-                    <div style="display:flex; gap:12px; align-items: center;">
+
+                    <div style="display:flex; gap:12px; margin-bottom:12px; align-items: center;">
                         <button class="tts-btn" style="width:28px; height:28px; font-size:0.7rem;" onclick="speak('turbo_air')">▶</button>
                         <div style="font-size:0.85rem; font-weight:600;">
                             <b data-i18n="turbo_air_t">Turbo Air:</b>
                             <span data-i18n="turbo_air_d">Switch HEPA to Turbo mode.</span>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:12px; align-items: center;">
+                        <button class="tts-btn" style="width:28px; height:28px; font-size:0.7rem;" onclick="speak('filter_check')">▶</button>
+                        <div style="font-size:0.85rem; font-weight:600;">
+                            <b data-i18n="filter_check_t">Filter Check:</b>
+                            <span data-i18n="filter_check_d">Filter status is good. Estimated replacement in 42 days.</span>
                         </div>
                     </div>
                 </div>
@@ -824,12 +792,9 @@
                 app_title: "OK-AIR",
                 alert_activity_t: "Outdoor Activity: STOP",
                 alert_activity_d: "Hazardous smoke detected. Move all outdoor play indoors immediately.",
-                filter_health: "Filter Health",
-                filter_status: "Status: Excellent",
-                filter_replace: "Est. Replace: 42 Days",
                 alert_title: "Wildfire Smoke Monster Alert!",
                 alert_desc: "Huffy is huffing smoke. Stay safe!",
-                sensor_loc: "Sensor at: Our Center",
+                sensor_loc: "Air Quality at Our Center",
                 outdoor: "Outdoor",
                 indoor: "Indoor",
                 eff_label: "Protection Efficiency: 92% cleaner",
@@ -838,6 +803,8 @@
                 seal_nest_d: "Check windows are closed!",
                 turbo_air_t: "Turbo Air:",
                 turbo_air_d: "Switch HEPA to Turbo mode.",
+                filter_check_t: "Filter Check:",
+                filter_check_d: "Filter status is good. Estimated replacement in 42 days.",
                 map_caption: "Real-time Wildfire Smoke Plume from Weather Radar",
                 plume_label: "Active Smoke Plume (Real-time)",
                 map_center_label: "Our Center",
@@ -846,18 +813,15 @@
                 tip_desc: "Preschoolers breathe more air per pound of body weight than adults, making filtration critical during wildfire events.",
                 tip_ref: "Source: EPA Healthy Schools Initiative",
                 tooltip_outdoor: "May cause coughing, throat irritation, and breathing discomfort, especially in young children.",
-                tooltip_indoor: "Much safer for daily breathing and helps reduce exposure to harmful particles, especially for young children."
+                tooltip_indoor: "Safer for daily breathing and helps reduce exposure to harmful particles, especially for young children."
             },
             es: {
                 app_title: "OK-AIR",
                 alert_activity_t: "Actividad Exterior: PARAR",
                 alert_activity_d: "Humo peligroso detectado. Mueva las actividades al interior de inmediato.",
-                filter_health: "Salud del Filtro",
-                filter_status: "Estado: Excelente",
-                filter_replace: "Cambio est.: 42 Días",
                 alert_title: "¡Alerta del Monstruo de Humo de Incendios!",
                 alert_desc: "Huffy está echando humo. ¡Mantente a salvo!",
-                sensor_loc: "Sensor en: Nuestro Centro",
+                sensor_loc: "Calidad del aire en nuestro centro",
                 outdoor: "Exterior",
                 indoor: "Interior",
                 eff_label: "Eficiencia de protección: 92% más limpio",
@@ -866,6 +830,8 @@
                 seal_nest_d: "¡Verifique que las ventanas estén cerradas!",
                 turbo_air_t: "Aire Turbo:",
                 turbo_air_d: "Cambie los purificadores a modo Turbo.",
+                filter_check_t: "Revisión del filtro:",
+                filter_check_d: "El filtro está en buen estado. Reemplazo estimado en 42 días.",
                 map_caption: "Pluma de humo en tiempo real del radar meteorológico",
                 plume_label: "Pluma de humo activa",
                 map_center_label: "Nuestro Centro",
@@ -874,18 +840,15 @@
                 tip_desc: "Los niños en edad preescolar respiran más aire por libra de peso corporal que los adultos, por lo que la filtración es fundamental durante los incendios forestales.",
                 tip_ref: "Fuente: Iniciativa de Escuelas Saludables de la EPA",
                 tooltip_outdoor: "Puede causar tos, irritación de garganta y dificultad para respirar, especialmente en niños pequeños.",
-                tooltip_indoor: "Es mucho más seguro para la respiración diaria y ayuda a reducir la exposición a partículas dañinas, especialmente en niños pequeños."
+                tooltip_indoor: "Es más seguro para la respiración diaria y ayuda a reducir la exposición a partículas dañinas, especialmente en niños pequeños."
             },
             vi: {
                 app_title: "OK-AIR",
                 alert_activity_t: "Hoạt động ngoài trời: DỪNG",
                 alert_activity_d: "Phát hiện khói cháy rừng nguy hiểm. Di chuyển trẻ vào nhà ngay lập tức.",
-                filter_health: "Sức khỏe Bộ lọc",
-                filter_status: "Trạng thái: Rất tốt",
-                filter_replace: "Thay thế sau: 42 Ngày",
-                alert_title: "Cảnh báo khói!",
+                alert_title: "Cảnh báo Quái vật Khói Cháy rừng!",
                 alert_desc: "Huffy đang nhả khói. Hãy giữ an toàn!",
-                sensor_loc: "Cảnh báo Quái vật Khói Cháy rừng!",
+                sensor_loc: "Chất lượng không khí tại trung tâm",
                 outdoor: "Ngoài trời",
                 indoor: "Trong phòng",
                 eff_label: "Hiệu quả bảo vệ: Sạch hơn 92%",
@@ -894,6 +857,8 @@
                 seal_nest_d: "Kiểm tra tất cả cửa sổ đã đóng chưa!",
                 turbo_air_t: "Khí Turbo:",
                 turbo_air_d: "Chuyển máy lọc sang chế độ Turbo.",
+                filter_check_t: "Kiểm tra bộ lọc:",
+                filter_check_d: "Bộ lọc đang ở tình trạng tốt. Dự kiến thay sau 42 ngày.",
                 map_caption: "Luồng khói cháy rừng thời gian thực từ Radar",
                 plume_label: "Vùng khói đang hoạt động",
                 map_center_label: "Trung tâm của chúng ta",
@@ -902,18 +867,15 @@
                 tip_desc: "Trẻ mầm non hít thở nhiều không khí hơn trên mỗi pound trọng lượng cơ thể so với người lớn, vì vậy lọc không khí đặc biệt quan trọng trong mùa cháy rừng.",
                 tip_ref: "Nguồn: Sáng kiến Trường học Khỏe mạnh của EPA",
                 tooltip_outdoor: "Có thể gây ho, kích ứng cổ họng và khó thở, đặc biệt ở trẻ nhỏ.",
-                tooltip_indoor: "An toàn hơn nhiều cho việc hít thở hằng ngày và giúp giảm tiếp xúc với các hạt có hại, đặc biệt ở trẻ nhỏ."
+                tooltip_indoor: "An toàn hơn cho việc hít thở hằng ngày và giúp giảm tiếp xúc với các hạt có hại, đặc biệt ở trẻ nhỏ."
             },
             zh: {
                 app_title: "OK-AIR 计划",
                 alert_activity_t: "户外活动：停止",
                 alert_activity_d: "检测到有害野火烟雾。请立即将所有户外活动移至室内。",
-                filter_health: "滤网健康度",
-                filter_status: "状态：优良",
-                filter_replace: "预计更换：42 天后",
                 alert_title: "野火烟雾怪物警报！",
                 alert_desc: "煙霧怪物 Huffy 正在吐气。请注意安全！",
-                sensor_loc: "监测点：本中心",
+                sensor_loc: "本中心空气质量",
                 outdoor: "室外 PM2.5",
                 indoor: "室内 PM2.5",
                 eff_label: "防护效率：提升 92% 洁净度",
@@ -922,6 +884,8 @@
                 seal_nest_d: "请确认所有门窗均已紧闭！",
                 turbo_air_t: "強力过滤：",
                 turbo_air_d: "请将清浄机切换至 Turbo 模式。",
+                filter_check_t: "滤网检查：",
+                filter_check_d: "滤网状态良好，预计 42 天后需要更换。",
                 map_caption: "实时气象雷达野火烟流图",
                 plume_label: "活跃烟雾影响区",
                 map_center_label: "本中心",
@@ -943,6 +907,8 @@
                 const key = el.getAttribute('data-i18n');
                 if (i18n[l] && i18n[l][key]) {
                     el.innerText = i18n[l][key];
+                } else if (i18n.en && i18n.en[key]) {
+                    el.innerText = i18n.en[key];
                 }
             });
 
@@ -968,7 +934,8 @@
             const text =
                 i18n[currentLang].guide_title + ". " +
                 i18n[currentLang].seal_nest_t + " " + i18n[currentLang].seal_nest_d + ". " +
-                i18n[currentLang].turbo_air_t + " " + i18n[currentLang].turbo_air_d;
+                i18n[currentLang].turbo_air_t + " " + i18n[currentLang].turbo_air_d + ". " +
+                i18n[currentLang].filter_check_t + " " + i18n[currentLang].filter_check_d;
             runSpeech(text);
         };
 
@@ -1079,3 +1046,4 @@
         }
     </script>
 </body>
+</html>
