@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OK-AIR | ECE Buddy Intelligence Dashboard</title>
+    <title>OK-AIR | Wildfire ECE Intel Buddy</title>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700;800&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -15,6 +15,7 @@
             --ok-air-blue: #5B9DD2;
             --color-huffy: #D25B5B;
             --color-puffy: #67AC7B;
+            --color-fire: #FF6B00;
             --gb-gray: #B3B7B9;
             --wobble-radius: 20px 50px 20px 50px / 50px 20px 50px 20px;
         }
@@ -24,12 +25,12 @@
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
             margin: 0; display: flex; height: 100vh; overflow: hidden;
-            background-image: url('https://www.transparenttextures.com/patterns/asfalt-light.png'); /* 微細節紋理提升質感 */
+            background-image: url('https://www.transparenttextures.com/patterns/asfalt-light.png');
         }
 
         h1, h2, h3 { font-family: 'Quicksand', sans-serif; font-weight: 700; margin: 0; }
 
-        /* --- 1. GameBoy Splash Screen --- */
+        /* --- 1. GameBoy Splash Screen (開場動畫) --- */
         #splash-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #d2d2d2; z-index: 9999;
@@ -88,7 +89,7 @@
         @keyframes fast-load { 0% { width: 0%; } 100% { width: 100%; } }
         .gb-zoomed { transform: scale(8) translateZ(300px); opacity: 0; pointer-events: none; filter: blur(10px); }
 
-        /* --- 2. Main Layout --- */
+        /* --- 2. 主介面佈局 --- */
         #app-content { display: flex; width: 100%; height: 100%; opacity: 0; transition: opacity 1.2s; }
 
         #sidebar {
@@ -111,51 +112,69 @@
             background: #FFF; border: 3.5px solid var(--border-ink);
             border-radius: 20px; padding: 20px; margin-bottom: 20px;
             box-shadow: 6px 6px 0px rgba(0,0,0,0.04);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+            transition: all 0.3s;
         }
         .module-card:hover { transform: translateY(-4px) rotate(0.5deg); box-shadow: 10px 10px 0px rgba(0,0,0,0.06); }
 
+        /* 野火警報區塊 */
         .vibe-hero {
             background: #FFF; border: 3.5px solid var(--border-ink);
             border-radius: var(--wobble-radius);
             padding: 25px; margin-bottom: 25px;
             box-shadow: 8px 8px 0px rgba(0,0,0,0.04);
             display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            cursor: pointer; position: relative;
         }
-        .vibe-img { height: 95px; margin-bottom: 12px; animation: float 3.5s infinite ease-in-out; transition: transform 0.2s; }
-        
-        /* Huffy 的呼吸光暈特效 */
-        .vibe-hero.alert-active { animation: huffy-glow 4s infinite ease-in-out; }
-        @keyframes huffy-glow { 0%, 100% { box-shadow: 8px 8px 0px rgba(0,0,0,0.04); } 50% { box-shadow: 8px 8px 25px rgba(210, 91, 91, 0.3); } }
+        .vibe-hero.alert-active { animation: wildfire-pulse 4s infinite ease-in-out; }
+        @keyframes wildfire-pulse { 0%, 100% { border-color: var(--border-ink); } 50% { border-color: var(--color-fire); box-shadow: 8px 8px 25px rgba(255, 107, 0, 0.2); } }
 
-        .aqi-pill-container { display: flex; gap: 12px; margin: 15px 0; align-items: stretch; height: 160px; }
+        .vibe-img-container { position: relative; height: 95px; margin-bottom: 12px; }
+        .vibe-img { height: 100%; animation: float 3.5s infinite ease-in-out; }
+        
+        /* 火焰符號 */
+        .fire-symbol {
+            position: absolute; top: -10px; right: -25px; font-size: 2rem;
+            animation: fire-flicker 0.6s infinite alternate;
+        }
+        @keyframes fire-flicker { 0% { transform: scale(1) rotate(-5deg); opacity: 0.8; } 100% { transform: scale(1.2) rotate(5deg); opacity: 1; } }
+
+        /* 數據對比修正 */
+        .aqi-pill-container { display: flex; gap: 12px; margin: 15px 0; align-items: stretch; }
         .data-pill {
             flex: 1; border: 3px solid var(--border-ink); border-radius: 18px;
             padding: 15px; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; position: relative; cursor: help; overflow: visible;
+            justify-content: center; position: relative; cursor: help;
         }
         .pill-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; opacity: 0.7; }
         .pill-value { font-size: 2.3rem; font-weight: 900; line-height: 1; margin: 8px 0; }
         .pill-unit { font-size: 0.75rem; font-weight: 700; opacity: 0.6; }
-        .pill-img { height: 45px; margin-top: 5px; z-index: 2; }
+        .pill-img { height: 45px; margin-top: 5px; }
 
-        /* 修正後的 Sparkles 定位，確保不擋住文字 */
-        .sparkle-decor { position: absolute; bottom: 5px; right: 5px; height: 50px; pointer-events: none; z-index: 1; opacity: 0.8; }
-
+        /* Tooltip */
         .data-pill:hover::after {
             content: attr(data-concept); position: absolute; bottom: 115%; left: 50%; transform: translateX(-50%);
             width: 220px; background: var(--border-ink); color: #fff; padding: 14px; border-radius: 12px;
             font-size: 0.75rem; line-height: 1.5; z-index: 100; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
 
-        .tip-module { background: #F2FAF4; border-color: var(--color-puffy); }
-        .tip-ref { font-size: 0.65rem; color: var(--text-sub); opacity: 0.6; margin-top: 10px; display: block; font-style: italic; border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 5px;}
+        .sparkle-decor { position: absolute; bottom: 10px; right: 10px; height: 45px; pointer-events: none; opacity: 0.8; }
 
         /* --- 4. Map Viewport --- */
         #viewport {
             flex-grow: 1; position: relative; background-color: #EFEFE9;
             display: flex; align-items: center; justify-content: center; padding: 40px;
-            perspective: 1200px; /* 為視差準備 */
+            perspective: 1200px;
+        }
+
+        /* 老師要求的地圖上方標題 */
+        .map-header-caption {
+            position: absolute; top: 25px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(8px);
+            border: 2px solid var(--border-ink); border-radius: 50px;
+            padding: 8px 24px; font-size: 0.85rem; font-weight: 800;
+            color: var(--text-main); font-family: 'Quicksand';
+            z-index: 10; box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+            white-space: nowrap;
         }
 
         #active-map {
@@ -164,22 +183,26 @@
             background-size: cover; background-repeat: no-repeat; background-position: center;
             border: 4px solid var(--border-ink); border-radius: var(--wobble-radius);
             background-color: #FFF; position: relative; box-shadow: 20px 20px 0px rgba(0,0,0,0.07);
-            transition: transform 0.1s ease-out; /* 平滑視差 */
-            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out; transform-style: preserve-3d;
+            overflow: hidden; /* 煙霧粒子不超出邊界 */
         }
 
-        .sticker { position: absolute; transform: translate(-50%, -100%) translateZ(20px); cursor: pointer; transition: 0.3s; }
+        /* 煙霧粒子畫布 */
+        #smoke-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1; opacity: 0.4;
+        }
+
+        .sticker { position: absolute; transform: translate(-50%, -100%) translateZ(20px); cursor: pointer; transition: 0.3s; z-index: 5; }
         .sticker:hover { transform: translate(-50%, -100%) translateZ(40px) scale(1.15) rotate(5deg); }
         .sticker img { height: 75px; filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.12)); }
         
-        .nature-decor { position: absolute; height: 65px; opacity: 0.8; pointer-events: none; animation: float 5s infinite ease-in-out; }
-
         .plume-callout-sticker {
             position: absolute; top: 35%; left: 50%;
             background: rgba(255, 255, 255, 0.95); border: 2.5px solid var(--border-ink);
             backdrop-filter: blur(4px); border-radius: 15px 5px 15px 5px; padding: 12px 18px;
             font-size: 0.85rem; font-weight: 800; font-family: 'Quicksand';
-            box-shadow: 5px 5px 0px rgba(0,0,0,0.1); transform: translateZ(10px);
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.1); transform: translateZ(10px); z-index: 6;
         }
 
         @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-12px) rotate(2deg); } }
@@ -226,16 +249,19 @@
                         <div style="font-size: 1.15rem; font-weight: 800; text-transform: uppercase;">Outdoor Activity: STOP</div>
                     </div>
                     <p style="font-size: 0.9rem; font-weight: 600; color: var(--text-sub); margin: 0; line-height: 1.5;">
-                        Hazardous smoke detected. Move preschool activities indoors immediately.
+                        Hazardous wildfire smoke detected. Move preschool activities indoors immediately.
                     </p>
                 </div>
 
-                <!-- Smoke Monster Alert -->
+                <!-- Wildfire Smoke Monster Alert (按要求更新名稱與火符號) -->
                 <div class="vibe-hero alert-active" 
                      onmouseenter="document.getElementById('huffy-hero-img').src='Huffy_Bite.png'" 
                      onmouseleave="document.getElementById('huffy-hero-img').src='Huffy.png'">
-                    <img src="Huffy.png" alt="Huffy" class="vibe-img" id="huffy-hero-img">
-                    <div style="color: var(--color-huffy); font-size: 1.25rem; text-transform: uppercase; font-weight: 800;">Smoke Monster Alert!</div>
+                    <div class="vibe-img-container">
+                        <img src="Huffy.png" alt="Huffy" class="vibe-img" id="huffy-hero-img">
+                        <span class="fire-symbol">🔥</span>
+                    </div>
+                    <div style="color: var(--color-huffy); font-size: 1.15rem; text-transform: uppercase; font-weight: 900; letter-spacing: 0.5px;">Wildfire Smoke Monster Alert!</div>
                     <p style="font-size: 0.85rem; margin: 8px 0 0 0; font-weight: 600; color: var(--text-sub);">Huffy is visiting our area. Let's stay safe!</p>
                 </div>
 
@@ -245,14 +271,14 @@
                         📍 Sensor at: <b>Our Center</b>
                     </div>
                     <div class="aqi-pill-container">
-                        <div class="data-pill" style="background:#FFF1F1; border-color:var(--color-huffy); color:var(--color-huffy);" data-concept="Outdoor PM2.5 level is 158. Sensitive groups should avoid outdoor exposure.">
+                        <div class="data-pill" style="background:#FFF1F1; border-color:var(--color-huffy); color:var(--color-huffy);" data-concept="Outdoor PM2.5 level is 158. Avoid all outdoor physical activity.">
                             <span class="pill-label">Outdoor PM2.5</span>
                             <span class="pill-value" id="val-outdoor">0</span>
                             <span class="pill-unit">µg/m³</span>
                             <img src="Huffy.png" alt="Huffy" class="pill-img">
                         </div>
                         <div style="align-self: center; font-size: 1.2rem; font-weight: 900; color: var(--text-sub); opacity: 0.4;">vs</div>
-                        <div class="data-pill" style="background:#F2FAF4; border-color:var(--color-puffy); color:var(--color-puffy);" data-concept="Indoor PM2.5 is 12. Safe and clean air for ECE children.">
+                        <div class="data-pill" style="background:#F2FAF4; border-color:var(--color-puffy); color:var(--color-puffy);" data-concept="Indoor PM2.5 is 12. Safe and clean air for our little ones.">
                             <span class="pill-label">Indoor PM2.5</span>
                             <span class="pill-value" id="val-indoor">0</span>
                             <span class="pill-unit">µg/m³</span>
@@ -266,25 +292,30 @@
                 </div>
 
                 <!-- 健康小貼士 -->
-                <div class="module-card tip-module">
+                <div class="module-card" style="background: #F2FAF4; border-color: var(--color-puffy);">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: var(--color-puffy);">
                         <img src="Puffy.png" alt="Puffy" style="height: 25px;">
-                        <h3>Puffy's Air Fact</h3>
+                        <h3 style="font-size:0.9rem;">Puffy's Air Fact</h3>
                     </div>
                     <p style="font-size: 0.75rem; font-weight: 600; line-height: 1.4; color: var(--text-main); margin: 0;">
                         Preschoolers breathe more air per pound of body weight than adults, making filtration critical during wildfire events.
                     </p>
-                    <span class="tip-ref">Source: EPA Healthy Schools Initiative</span>
+                    <span style="font-size: 0.6rem; color: var(--text-sub); opacity: 0.6; margin-top: 8px; display: block; font-style: italic;">Source: EPA Healthy Schools Initiative</span>
                 </div>
             </div>
         </div>
 
         <div id="viewport">
-            <div id="active-map">
-                <div class="plume-callout-sticker">Active Smoke Plume (Real-time)</div>
+            <!-- 老師要求的雷達圖上方標題 -->
+            <div class="map-header-caption">
+                📡 Real-time Wildfire Smoke Plume from Weather Radar
+            </div>
 
-                <img src="Nature.png" alt="Nature" class="nature-decor" style="bottom: 18%; left: 8%;" onerror="this.style.display='none'">
-                <img src="Nature.png" alt="Nature" class="nature-decor" style="top: 12%; right: 12%; transform: scale(0.9);" onerror="this.style.display='none'">
+            <div id="active-map">
+                <!-- 煙霧粒子畫布 -->
+                <canvas id="smoke-canvas"></canvas>
+
+                <div class="plume-callout-sticker">Active Smoke Plume (Real-time)</div>
 
                 <div class="sticker" style="top: 73%; left: 78%;">
                     <div style="background: rgba(255, 255, 255, 0.95); border: 2.5px solid var(--border-ink); backdrop-filter: blur(3px); border-radius: 12px; padding: 4px 14px; font-size: 0.8rem; font-weight: 800; position: absolute; top: -40px; left: 50%; transform: translateX(-50%); white-space: nowrap; box-shadow: 6px 6px 0px rgba(0,0,0,0.1);">Our Center</div>
@@ -307,7 +338,7 @@
     </div>
 
     <script>
-        // 數字跳動動畫函式
+        // 數字跳動動畫
         function animateValue(id, start, end, duration) {
             const obj = document.getElementById(id);
             let startTimestamp = null;
@@ -315,29 +346,74 @@
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
                 obj.innerHTML = Math.floor(progress * (end - start) + start);
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
+                if (progress < 1) window.requestAnimationFrame(step);
             };
             window.requestAnimationFrame(step);
         }
 
-        // 3D 視差效果
+        // 3D 視差
         const map = document.getElementById('active-map');
         const viewport = document.getElementById('viewport');
         viewport.addEventListener('mousemove', (e) => {
             const rect = viewport.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
-            const rotateX = (y - centerY) / 30;
-            const rotateY = (centerX - x) / 30;
+            const rotateX = (e.clientY - rect.top - centerY) / 35;
+            const rotateY = (centerX - (e.clientX - rect.left)) / 35;
             map.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
         });
         viewport.addEventListener('mouseleave', () => {
             map.style.transform = `rotateX(0deg) rotateY(0deg)`;
         });
+
+        // 煙霧粒子模擬 (厲害的功能)
+        const canvas = document.getElementById('smoke-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function resizeCanvas() {
+            canvas.width = map.clientWidth;
+            canvas.height = map.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 40 + 20;
+                this.speedX = Math.random() * 0.5 + 0.2; // 往右飄
+                this.speedY = Math.random() * 0.2 - 0.1;
+                this.opacity = Math.random() * 0.3;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width + 50) this.x = -50;
+                if (this.y < -50 || this.y > canvas.height + 50) this.reset();
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(100, 100, 100, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 40; i++) particles.push(new Particle());
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
 
         window.addEventListener('load', () => {
             const shell = document.getElementById('gb-shell');
@@ -359,8 +435,6 @@
                 setTimeout(() => {
                     splash.style.opacity = '0';
                     app.style.opacity = '1';
-                    
-                    // 進入系統後啟動數字動畫
                     animateValue("val-outdoor", 0, 158, 2000);
                     animateValue("val-indoor", 0, 12, 1500);
 
