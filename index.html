@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OK-AIR | Advanced ECE Air Intel Buddy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700;800&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #F7F6F3;
+            --bg-card: #FFFFFF;
+            --text-main: #37352F;
+            --text-sub: #6A6762;
+            --border-ink: #37352F;
+            --ok-air-blue: #5B9DD2;
+            --color-huffy: #D25B5B;
+            --color-puffy: #67AC7B;
+            --gb-gray: #9ca0a3;
+            --wobble-radius: 20px 50px 20px 50px / 50px 20px 50px 20px;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0; display: flex; height: 100vh; overflow: hidden;
+        }
+
+        h1, h2, h3 { font-family: 'Quicksand', sans-serif; font-weight: 700; margin: 0; }
+
+        /* --- 1. GameBoy 開場動畫 (Splash Screen) --- */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #e0e0e0; z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            perspective: 1000px;
+        }
+
+        .gameboy {
+            width: 300px; height: 500px;
+            background: var(--gb-gray);
+            border: 4px solid var(--border-ink);
+            border-radius: 10px 10px 80px 10px;
+            position: relative;
+            box-shadow: 20px 20px 0px rgba(0,0,0,0.1);
+            transition: all 1.2s cubic-bezier(0.7, 0, 0.3, 1);
+        }
+
+        .gb-screen-area {
+            width: 240px; height: 200px;
+            background: #8b962e; /* Classic GB screen color */
+            margin: 40px auto;
+            border: 4px solid var(--border-ink);
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        .puffy-loader {
+            width: 80px; height: 80px;
+            object-fit: contain;
+            margin-bottom: 20px;
+            animation: float 2s infinite ease-in-out;
+            transition: all 1s ease-in-out;
+        }
+
+        .gb-controls { padding: 0 30px; display: flex; justify-content: space-between; }
+        .d-pad { width: 60px; height: 60px; background: var(--border-ink); position: relative; border-radius: 5px; }
+        .buttons-ab { display: flex; gap: 15px; margin-top: 20px; }
+        .btn-red { width: 40px; height: 40px; background: #a82e4b; border-radius: 50%; border: 3px solid var(--border-ink); }
+
+        /* Loading Bar inside GB */
+        .loading-container { width: 180px; height: 8px; background: rgba(0,0,0,0.2); border: 2px solid var(--border-ink); border-radius: 5px; overflow: hidden; }
+        .loading-bar { 
+            width: 0%; height: 100%; background: var(--border-ink); 
+            animation: fast-load 2.8s forwards cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        @keyframes fast-load { 0% { width: 0%; } 40% { width: 65%; } 90% { width: 98%; } 100% { width: 100%; } }
+
+        /* Zoom Effect */
+        .gb-zoomed { transform: scale(5); opacity: 0; pointer-events: none; }
+
+        /* --- 2. 主介面佈局 --- */
+        #app-content { display: flex; width: 100%; height: 100%; opacity: 0; transition: opacity 0.8; }
+
+        #sidebar {
+            width: 480px; background-color: var(--bg-card);
+            border-right: 3px solid var(--border-ink);
+            display: flex; flex-direction: column; overflow-y: auto; z-index: 10;
+        }
+
+        .section { padding: 30px; }
+        
+        .header-logo-area {
+            display: flex; align-items: center; gap: 12px; border-bottom: 3px solid var(--border-ink);
+            background: #FFF; height: 85px; padding-left: 20px;
+        }
+
+        #logo-target { width: 50px; height: 50px; position: relative; display: flex; align-items: center; justify-content: center; }
+
+        /* --- 3. 數據展示區與工具提示 --- */
+        .vibe-hero {
+            background: #FFF; border: 3px solid var(--border-ink);
+            border-radius: var(--wobble-radius);
+            padding: 25px; margin-bottom: 25px;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .comparison-card {
+            background: #FFF; border: 3px solid var(--border-ink);
+            border-radius: 25px; padding: 20px; margin-bottom: 25px;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.04);
+        }
+
+        .aqi-pill-container { display: flex; gap: 15px; align-items: stretch; margin: 15px 0; }
+
+        .data-pill {
+            flex: 1; border: 3px solid var(--border-ink); border-radius: 18px;
+            padding: 12px; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; position: relative; cursor: help;
+        }
+
+        .pill-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; opacity: 0.7; }
+        .pill-value { font-size: 2.2rem; font-weight: 900; line-height: 1; margin: 5px 0; }
+        .pill-unit { font-size: 0.7rem; font-weight: 700; opacity: 0.6; margin-bottom: 5px;}
+        .pill-img { height: 45px; }
+
+        /* Tooltip Style */
+        .data-pill:hover::after {
+            content: attr(data-concept);
+            position: absolute; bottom: 105%; left: 50%; transform: translateX(-50%);
+            width: 200px; background: var(--border-ink); color: #fff;
+            padding: 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 500;
+            z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            text-align: left; line-height: 1.4;
+        }
+
+        .pill-huffy { background: #FFF1F1; border-color: var(--color-huffy); color: var(--color-huffy); }
+        .pill-puffy { background: #F2FAF4; border-color: var(--color-puffy); color: var(--color-puffy); }
+
+        /* --- 4. 地圖區域 --- */
+        #viewport {
+            flex-grow: 1; position: relative; background-color: #EFEFE9;
+            display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+
+        #active-map {
+            width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(247,246,243,0.3), rgba(247,246,243,0.3)), url('Untitled.png');
+            background-size: contain; background-repeat: no-repeat; background-position: center;
+            border: 3px solid var(--border-ink); border-radius: var(--wobble-radius);
+            background-color: #FFF; position: relative; box-shadow: 15px 15px 0px rgba(0,0,0,0.05);
+        }
+
+        /* 插畫標記 */
+        .sticker { position: absolute; transform: translate(-50%, -100%); cursor: pointer; transition: 0.2s; }
+        .sticker:hover { transform: translate(-50%, -100%) scale(1.1) rotate(5deg); }
+        .sticker img { height: 70px; filter: drop-shadow(3px 3px 0px rgba(0,0,0,0.1)); }
+        
+        .plume-callout-sticker {
+            position: absolute; top: 40%; left: 45%;
+            background: #FFF; border: 2px solid var(--border-ink);
+            border-radius: 15px 5px 15px 5px; padding: 8px 12px;
+            font-size: 0.75rem; font-weight: 800; font-family: 'Quicksand';
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.1); animation: sticker-wobble 4s infinite;
+        }
+
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes sticker-wobble { 0%, 100% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.05) rotate(3deg); } }
+
+        #footer-credits { position: absolute; bottom: 20px; left: 30px; font-size: 0.75rem; font-weight: 700; color: var(--text-sub); opacity: 0.6; }
+    </style>
+</head>
+<body>
+
+    <!-- 開場動畫 Splash Screen (GameBoy) -->
+    <div id="splash-screen">
+        <div class="gameboy" id="gb-shell">
+            <div class="gb-screen-area">
+                <img src="Puffy.png" alt="Puffy" class="puffy-loader" id="puffy-main">
+                <div class="loading-container">
+                    <div class="loading-bar"></div>
+                </div>
+                <div style="font-family: 'Quicksand'; font-size: 10px; font-weight: 800; margin-top: 5px;">LOAD START</div>
+            </div>
+            <div class="gb-controls">
+                <div class="d-pad"></div>
+                <div class="buttons-ab">
+                    <div class="btn-red" style="transform: translateY(10px);"></div>
+                    <div class="btn-red"></div>
+                </div>
+            </div>
+            <div style="position: absolute; bottom: 20px; width: 100%; text-align: center; font-size: 12px; font-weight: 800; letter-spacing: 2px;">OK-AIR DOT MATRIX</div>
+        </div>
+    </div>
+
+    <!-- 主內容介面 -->
+    <div id="app-content">
+        <div id="sidebar">
+            <div class="header-logo-area">
+                <div id="logo-target">
+                    <!-- Puffy 會飛到這裡 -->
+                </div>
+                <h1>SafeAir <span style="font-weight:400; color:var(--text-sub);">Intel</span></h1>
+            </div>
+
+            <div class="section">
+                <div style="display: inline-block; background: var(--ok-air-blue); color: #FFF; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 800; border: 2px solid var(--border-ink); margin-bottom: 10px; box-shadow: 3px 3px 0px var(--border-ink);">OK-AIR PROJECT</div>
+                
+                <div class="vibe-hero">
+                    <img src="Huffy.png" alt="Huffy" style="height: 100px; margin-bottom: 10px; animation: float 3s infinite ease-in-out;">
+                    <div style="color: var(--color-huffy); font-size: 1.3rem; text-transform: uppercase; font-weight: 800; width: 100%;">Smoke Monster Alert!</div>
+                    <p style="font-size: 0.85rem; margin: 8px 0 0 0; font-weight: 500; width: 100%;">Huffy is visiting Edmond North ECE. Let's stay safe!</p>
+                </div>
+
+                <div class="comparison-card">
+                    <div class="school-header">
+                        📍 <span>Sensor at:</span> <b>Edmond North ECE Center</b>
+                    </div>
+
+                    <div class="aqi-pill-container">
+                        <div class="data-pill pill-huffy" data-concept="Unhealthy: Everyone may experience health effects; members of sensitive groups may experience more serious health effects.">
+                            <span class="pill-label">Outdoor PM2.5</span>
+                            <span class="pill-value">158</span>
+                            <span class="pill-unit">µg/m³</span>
+                            <img src="Huffy.png" alt="Huffy" class="pill-img">
+                        </div>
+
+                        <div style="align-self: center; font-size: 1.2rem; font-weight: 900; color: var(--text-sub);">vs</div>
+
+                        <div class="data-pill pill-puffy" data-concept="Good: Air quality is satisfactory, and air pollution poses little or no risk. Safe for ECE children.">
+                            <span class="pill-label">Indoor PM2.5</span>
+                            <span class="pill-value">12</span>
+                            <span class="pill-unit">µg/m³</span>
+                            <img src="Puffy.png" alt="Puffy" class="pill-img">
+                        </div>
+                    </div>
+
+                    <div class="efficiency-banner">
+                        🛡️ Our Super Shield is working! <span style="color:var(--color-puffy); font-weight:900;">92% cleaner</span> inside.
+                    </div>
+                </div>
+
+                <!-- 行動指南 -->
+                <div style="background:#F9F9F9; border:3px solid var(--border-ink); border-radius:20px; padding:20px;">
+                    <h3 style="color:var(--ok-air-blue); font-size:1rem; margin-bottom:15px;">📋 Teacher Actions</h3>
+                    <div style="display:flex; gap:12px; margin-bottom:15px; font-size:0.85rem; font-weight:600;">
+                        <span style="font-size:2rem;">🚪</span>
+                        <div><b>Seal the Nest:</b> Teacher Buddy, check that all external doors & windows are closed!</div>
+                    </div>
+                    <div style="display:flex; gap:12px; font-size:0.85rem; font-weight:600;">
+                        <span style="font-size:2rem;">🌀</span>
+                        <div><b>Turbo Air:</b> Switch classroom HEPA purifiers to <b>Turbo</b> mode immediately.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="viewport">
+            <div id="active-map">
+                <div class="plume-callout-sticker">Current Smoke Position</div>
+
+                <!-- ECE Center 標記 1 -->
+                <div class="sticker" style="top: 73%; left: 78%;">
+                    <div style="background: #FFF; border: 2.5px solid var(--border-ink); border-radius: 10px; padding: 2px 10px; font-size: 0.75rem; font-weight: 800; position: absolute; top: -35px; left: 50%; transform: translateX(-50%); white-space: nowrap;">Edmond North ECE</div>
+                    <img src="ECE.png" alt="ECE Center">
+                </div>
+
+                <!-- ECE Center 標記 2 -->
+                <div class="sticker" style="top: 85%; left: 65%; opacity: 0.5;">
+                    <div style="background: #FFF; border: 2.5px solid var(--border-ink); border-radius: 10px; padding: 2px 10px; font-size: 0.75rem; font-weight: 800; position: absolute; top: -35px; left: 50%; transform: translateX(-50%); white-space: nowrap;">OKC Central ECE</div>
+                    <img src="ECE.png" alt="ECE Center">
+                </div>
+
+                <!-- ECE Center 標記 3 (新增) -->
+                <div class="sticker" style="top: 65%; left: 55%; opacity: 0.8;">
+                    <div style="background: #FFF; border: 2.5px solid var(--border-ink); border-radius: 10px; padding: 2px 10px; font-size: 0.75rem; font-weight: 800; position: absolute; top: -35px; left: 50%; transform: translateX(-50%); white-space: nowrap;">Norman ECE Center</div>
+                    <img src="ECE.png" alt="ECE Center">
+                </div>
+
+                <!-- EPA 標記 -->
+                <div class="sticker" style="top: 76%; left: 72%;">
+                    <div style="background: #FFF; border: 2.5px solid var(--border-ink); border-radius: 10px; padding: 2px 10px; font-size: 0.75rem; font-weight: 800; border-color: var(--ok-air-blue); position: absolute; top: -35px; left: 50%; transform: translateX(-50%); white-space: nowrap;">EPA Tower</div>
+                    <img src="EPA.png" alt="EPA Station">
+                </div>
+
+                <div id="status-bar" style="height: 32px; background-color: rgba(255,255,255,0.9); border-top: 1px dashed var(--border-ink); position: absolute; bottom: 0; width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; font-size: 0.8rem; color: var(--text-muted); box-sizing: border-box; font-family:'Quicksand', sans-serif;">
+                    <div>Linked ECE Sensors (4/4 Nodes Reporting)</div>
+                    <div>Ref: OK-AIR PROJECT ECE IAQ Study</div>
+                    <div>Data: Live (6s sync)</div>
+                </div>
+            </div>
+            <div id="footer-credits">OUHSC • Project OK-AIR © 2026</div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            const shell = document.getElementById('gb-shell');
+            const puffy = document.getElementById('puffy-main');
+            const splash = document.getElementById('splash-screen');
+            const app = document.getElementById('app-content');
+            const target = document.getElementById('logo-target');
+
+            // 1. 等待讀取動畫 (2.8s loading + 稍微停頓)
+            setTimeout(() => {
+                // 2. 啟動 GameBoy 縮放與進入效果
+                shell.classList.add('gb-zoomed');
+                
+                // 3. 計算 Puffy 飛向 Logo 的路徑 (修正為從螢幕位置出發)
+                const targetRect = target.getBoundingClientRect();
+                const puffyRect = puffy.getBoundingClientRect();
+                
+                const deltaX = targetRect.left - puffyRect.left + (targetRect.width/2 - puffyRect.width/2);
+                const deltaY = targetRect.top - puffyRect.top + (targetRect.height/2 - puffyRect.height/2);
+
+                puffy.style.transition = 'all 1.5s cubic-bezier(0.7, 0, 0.3, 1)';
+                puffy.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.4)`;
+                
+                // 4. 漸隱 Splash，顯示主 UI
+                setTimeout(() => {
+                    splash.style.opacity = '0';
+                    app.style.opacity = '1';
+                    
+                    setTimeout(() => {
+                        splash.style.display = 'none';
+                        // Puffy 正式轉職為 Logo
+                        puffy.style.transform = 'none';
+                        puffy.style.width = '100%';
+                        puffy.style.height = '100%';
+                        puffy.style.margin = '0';
+                        target.appendChild(puffy);
+                    }, 800);
+                }, 1000);
+
+            }, 3200);
+        });
+    </script>
+</body>
+</html>
