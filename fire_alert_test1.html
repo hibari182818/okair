@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OK-AIR | ECE Buddy Intelligence Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700;800&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #F7F6F3;
+            --bg-card: #FFFFFF;
+            --text-main: #37352F;
+            --text-sub: #6A6762;
+            --border-ink: #37352F;
+            --ok-air-blue: #5B9DD2;
+            --color-huffy: #D25B5B;
+            --color-puffy: #67AC7B;
+            --gb-gray: #B3B7B9;
+            --wobble-radius: 20px 50px 20px 50px / 50px 20px 50px 20px;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0; display: flex; height: 100vh; overflow: hidden;
+            background-image: url('https://www.transparenttextures.com/patterns/asfalt-light.png'); /* 微細節紋理提升質感 */
+        }
+
+        h1, h2, h3 { font-family: 'Quicksand', sans-serif; font-weight: 700; margin: 0; }
+
+        /* --- 1. GameBoy Splash Screen --- */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #d2d2d2; z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            perspective: 1500px;
+        }
+
+        .gameboy {
+            width: 320px; height: 520px;
+            background: var(--gb-gray);
+            border: 4px solid var(--border-ink);
+            border-radius: 10px 10px 80px 10px;
+            position: relative;
+            box-shadow: 25px 25px 0px rgba(0,0,0,0.15);
+            transition: all 1.5s cubic-bezier(0.7, 0, 0.3, 1);
+        }
+
+        .gb-screen-area {
+            width: 250px; height: 210px;
+            background: #8b962e;
+            margin: 40px auto 30px auto;
+            border: 4px solid var(--border-ink);
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.3);
+        }
+
+        .gb-screen-area::before {
+            content: " "; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%; z-index: 2; pointer-events: none;
+        }
+
+        #buddy-main-loader {
+            width: 90px; height: 90px; object-fit: contain; margin-bottom: 15px;
+            animation: float 2s infinite ease-in-out;
+        }
+
+        .loading-container { 
+            width: 180px; height: 14px; background: rgba(0,0,0,0.2); 
+            border: 2.5px solid var(--border-ink); border-radius: 4px; 
+            position: relative; overflow: hidden; z-index: 3;
+        }
+        .loading-bar { width: 0%; height: 100%; background: var(--border-ink); animation: fast-load 2.8s forwards cubic-bezier(0.65, 0, 0.35, 1); }
+
+        .gb-controls { padding: 0 40px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .d-pad { width: 70px; height: 70px; position: relative; }
+        .d-pad::before, .d-pad::after { content: ''; position: absolute; background: var(--border-ink); border-radius: 3px; }
+        .d-pad::before { width: 70px; height: 24px; top: 23px; left: 0; }
+        .d-pad::after { width: 24px; height: 70px; left: 23px; top: 0; }
+        .buttons-ab { display: flex; gap: 15px; transform: rotate(-25deg); margin-top: 10px; }
+        .btn-red { width: 45px; height: 45px; background: #a82e4b; border: 4px solid var(--border-ink); border-radius: 50%; box-shadow: 3px 3px 0px rgba(0,0,0,0.2); }
+
+        @keyframes fast-load { 0% { width: 0%; } 100% { width: 100%; } }
+        .gb-zoomed { transform: scale(8) translateZ(300px); opacity: 0; pointer-events: none; filter: blur(10px); }
+
+        /* --- 2. Main Layout --- */
+        #app-content { display: flex; width: 100%; height: 100%; opacity: 0; transition: opacity 1.2s; }
+
+        #sidebar {
+            width: 480px; background-color: var(--bg-card);
+            border-right: 3px solid var(--border-ink);
+            display: flex; flex-direction: column; overflow-y: auto; z-index: 10;
+        }
+
+        .section { padding: 25px 30px; }
+        
+        .header-logo-area {
+            display: flex; align-items: center; gap: 15px; border-bottom: 3px solid var(--border-ink);
+            background: #FFF; height: 90px; padding-left: 20px;
+        }
+
+        #logo-target { width: 60px; height: 60px; position: relative; display: flex; align-items: center; justify-content: center; }
+
+        /* --- 3. Sidebar Modules --- */
+        .module-card {
+            background: #FFF; border: 3.5px solid var(--border-ink);
+            border-radius: 20px; padding: 20px; margin-bottom: 20px;
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.04);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+        }
+        .module-card:hover { transform: translateY(-4px) rotate(0.5deg); box-shadow: 10px 10px 0px rgba(0,0,0,0.06); }
+
+        .vibe-hero {
+            background: #FFF; border: 3.5px solid var(--border-ink);
+            border-radius: var(--wobble-radius);
+            padding: 25px; margin-bottom: 25px;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.04);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        .vibe-img { height: 95px; margin-bottom: 12px; animation: float 3.5s infinite ease-in-out; transition: transform 0.2s; }
+        
+        /* Huffy 的呼吸光暈特效 */
+        .vibe-hero.alert-active { animation: huffy-glow 4s infinite ease-in-out; }
+        @keyframes huffy-glow { 0%, 100% { box-shadow: 8px 8px 0px rgba(0,0,0,0.04); } 50% { box-shadow: 8px 8px 25px rgba(210, 91, 91, 0.3); } }
+
+        .aqi-pill-container { display: flex; gap: 12px; margin: 15px 0; align-items: stretch; height: 160px; }
+        .data-pill {
+            flex: 1; border: 3px solid var(--border-ink); border-radius: 18px;
+            padding: 15px; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; position: relative; cursor: help; overflow: visible;
+        }
+        .pill-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; opacity: 0.7; }
+        .pill-value { font-size: 2.3rem; font-weight: 900; line-height: 1; margin: 8px 0; }
+        .pill-unit { font-size: 0.75rem; font-weight: 700; opacity: 0.6; }
+        .pill-img { height: 45px; margin-top: 5px; z-index: 2; }
+
+        /* 修正後的 Sparkles 定位，確保不擋住文字 */
+        .sparkle-decor { position: absolute; bottom: 5px; right: 5px; height: 50px; pointer-events: none; z-index: 1; opacity: 0.8; }
+
+        .data-pill:hover::after {
+            content: attr(data-concept); position: absolute; bottom: 115%; left: 50%; transform: translateX(-50%);
+            width: 220px; background: var(--border-ink); color: #fff; padding: 14px; border-radius: 12px;
+            font-size: 0.75rem; line-height: 1.5; z-index: 100; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .tip-module { background: #F2FAF4; border-color: var(--color-puffy); }
+        .tip-ref { font-size: 0.65rem; color: var(--text-sub); opacity: 0.6; margin-top: 10px; display: block; font-style: italic; border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 5px;}
+
+        /* --- 4. Map Viewport --- */
+        #viewport {
+            flex-grow: 1; position: relative; background-color: #EFEFE9;
+            display: flex; align-items: center; justify-content: center; padding: 40px;
+            perspective: 1200px; /* 為視差準備 */
+        }
+
+        #active-map {
+            width: 100%; height: 100%; max-width: 850px; max-height: 650px;
+            background-image: linear-gradient(rgba(247,246,243,0.2), rgba(247,246,243,0.2)), url('Untitled.png');
+            background-size: cover; background-repeat: no-repeat; background-position: center;
+            border: 4px solid var(--border-ink); border-radius: var(--wobble-radius);
+            background-color: #FFF; position: relative; box-shadow: 20px 20px 0px rgba(0,0,0,0.07);
+            transition: transform 0.1s ease-out; /* 平滑視差 */
+            transform-style: preserve-3d;
+        }
+
+        .sticker { position: absolute; transform: translate(-50%, -100%) translateZ(20px); cursor: pointer; transition: 0.3s; }
+        .sticker:hover { transform: translate(-50%, -100%) translateZ(40px) scale(1.15) rotate(5deg); }
+        .sticker img { height: 75px; filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.12)); }
+        
+        .nature-decor { position: absolute; height: 65px; opacity: 0.8; pointer-events: none; animation: float 5s infinite ease-in-out; }
+
+        .plume-callout-sticker {
+            position: absolute; top: 35%; left: 50%;
+            background: rgba(255, 255, 255, 0.95); border: 2.5px solid var(--border-ink);
+            backdrop-filter: blur(4px); border-radius: 15px 5px 15px 5px; padding: 12px 18px;
+            font-size: 0.85rem; font-weight: 800; font-family: 'Quicksand';
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.1); transform: translateZ(10px);
+        }
+
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-12px) rotate(2deg); } }
+
+        #footer-credits { position: absolute; bottom: 25px; left: 35px; font-size: 0.8rem; font-weight: 700; color: var(--text-sub); opacity: 0.7; }
+    </style>
+</head>
+<body>
+
+    <!-- 開場動畫 Splash Screen -->
+    <div id="splash-screen">
+        <div class="gameboy" id="gb-shell">
+            <div class="gb-screen-area">
+                <img src="Purifier_Buddy.png" alt="Purifier" id="buddy-main-loader">
+                <div class="loading-container">
+                    <div class="loading-bar"></div>
+                </div>
+                <div style="font-family: 'Quicksand'; font-size: 11px; font-weight: 800; margin-top: 10px; color: var(--border-ink); letter-spacing: 1.5px;">SYNCING OK-AIR...</div>
+            </div>
+            <div class="gb-controls">
+                <div class="d-pad"></div>
+                <div class="buttons-ab">
+                    <div class="btn-red"></div>
+                    <div class="btn-red" style="transform: translateY(-15px);"></div>
+                </div>
+            </div>
+            <div style="position: absolute; bottom: 30px; width: 100%; text-align: center; font-size: 12px; font-weight: 800; letter-spacing: 3px; color: #444;">OK-AIR DOT MATRIX</div>
+        </div>
+    </div>
+
+    <!-- 主介面 -->
+    <div id="app-content">
+        <div id="sidebar">
+            <div class="header-logo-area">
+                <div id="logo-target"></div>
+                <h1>OK-AIR</h1>
+            </div>
+
+            <div class="section">
+                <!-- 戶外活動警告 -->
+                <div class="module-card alert-panel" style="background:#FFF9F2; border-color:var(--color-huffy);">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; color: var(--color-huffy);">
+                        <img src="Activity_Sign.png" alt="Alert" style="height: 45px;" onerror="this.src='https://via.placeholder.com/40?text=⚠'">
+                        <div style="font-size: 1.15rem; font-weight: 800; text-transform: uppercase;">Outdoor Activity: STOP</div>
+                    </div>
+                    <p style="font-size: 0.9rem; font-weight: 600; color: var(--text-sub); margin: 0; line-height: 1.5;">
+                        Hazardous smoke detected. Move preschool activities indoors immediately.
+                    </p>
+                </div>
+
+                <!-- Smoke Monster Alert -->
+                <div class="vibe-hero alert-active" 
+                     onmouseenter="document.getElementById('huffy-hero-img').src='Huffy_Bite.png'" 
+                     onmouseleave="document.getElementById('huffy-hero-img').src='Huffy.png'">
+                    <img src="Huffy.png" alt="Huffy" class="vibe-img" id="huffy-hero-img">
+                    <div style="color: var(--color-huffy); font-size: 1.25rem; text-transform: uppercase; font-weight: 800;">Smoke Monster Alert!</div>
+                    <p style="font-size: 0.85rem; margin: 8px 0 0 0; font-weight: 600; color: var(--text-sub);">Huffy is visiting our area. Let's stay safe!</p>
+                </div>
+
+                <!-- 數據對比 -->
+                <div class="module-card">
+                    <div style="font-size: 0.95rem; font-weight: 800; border-bottom: 2px dashed #eee; padding-bottom: 12px; margin-bottom: 18px;">
+                        📍 Sensor at: <b>Our Center</b>
+                    </div>
+                    <div class="aqi-pill-container">
+                        <div class="data-pill" style="background:#FFF1F1; border-color:var(--color-huffy); color:var(--color-huffy);" data-concept="Outdoor PM2.5 level is 158. Sensitive groups should avoid outdoor exposure.">
+                            <span class="pill-label">Outdoor PM2.5</span>
+                            <span class="pill-value" id="val-outdoor">0</span>
+                            <span class="pill-unit">µg/m³</span>
+                            <img src="Huffy.png" alt="Huffy" class="pill-img">
+                        </div>
+                        <div style="align-self: center; font-size: 1.2rem; font-weight: 900; color: var(--text-sub); opacity: 0.4;">vs</div>
+                        <div class="data-pill" style="background:#F2FAF4; border-color:var(--color-puffy); color:var(--color-puffy);" data-concept="Indoor PM2.5 is 12. Safe and clean air for ECE children.">
+                            <span class="pill-label">Indoor PM2.5</span>
+                            <span class="pill-value" id="val-indoor">0</span>
+                            <span class="pill-unit">µg/m³</span>
+                            <img src="Puffy.png" alt="Puffy" class="pill-img">
+                            <img src="Sparkles.png" alt="Sparkles" class="sparkle-decor" onerror="this.style.display='none'">
+                        </div>
+                    </div>
+                    <div style="background:var(--bg-page); border:2.5px dashed var(--border-ink); border-radius:12px; padding:12px; text-align:center; font-size:0.9rem; font-weight:700; color:var(--text-sub);">
+                        🛡️ Protection Efficiency: <span style="color:var(--color-puffy); font-weight:900;">92% cleaner</span>
+                    </div>
+                </div>
+
+                <!-- 健康小貼士 -->
+                <div class="module-card tip-module">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: var(--color-puffy);">
+                        <img src="Puffy.png" alt="Puffy" style="height: 25px;">
+                        <h3>Puffy's Air Fact</h3>
+                    </div>
+                    <p style="font-size: 0.75rem; font-weight: 600; line-height: 1.4; color: var(--text-main); margin: 0;">
+                        Preschoolers breathe more air per pound of body weight than adults, making filtration critical during wildfire events.
+                    </p>
+                    <span class="tip-ref">Source: EPA Healthy Schools Initiative</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="viewport">
+            <div id="active-map">
+                <div class="plume-callout-sticker">Active Smoke Plume (Real-time)</div>
+
+                <img src="Nature.png" alt="Nature" class="nature-decor" style="bottom: 18%; left: 8%;" onerror="this.style.display='none'">
+                <img src="Nature.png" alt="Nature" class="nature-decor" style="top: 12%; right: 12%; transform: scale(0.9);" onerror="this.style.display='none'">
+
+                <div class="sticker" style="top: 73%; left: 78%;">
+                    <div style="background: rgba(255, 255, 255, 0.95); border: 2.5px solid var(--border-ink); backdrop-filter: blur(3px); border-radius: 12px; padding: 4px 14px; font-size: 0.8rem; font-weight: 800; position: absolute; top: -40px; left: 50%; transform: translateX(-50%); white-space: nowrap; box-shadow: 6px 6px 0px rgba(0,0,0,0.1);">Our Center</div>
+                    <img src="ECE.png" alt="Center">
+                </div>
+
+                <div class="sticker" style="top: 76%; left: 72%;">
+                    <div style="background: rgba(255, 255, 255, 0.95); border: 2.5px solid var(--border-ink); backdrop-filter: blur(3px); border-radius: 12px; padding: 4px 14px; font-size: 0.8rem; font-weight: 800; border-color: var(--ok-air-blue); position: absolute; top: -40px; left: 50%; transform: translateX(-50%); white-space: nowrap; box-shadow: 6px 6px 0px rgba(0,0,0,0.1);">EPA Station</div>
+                    <img src="EPA.png" alt="EPA">
+                </div>
+
+                <div id="status-bar" style="height: 36px; background-color: rgba(255,255,255,0.95); border-top: 1px dashed var(--border-ink); position: absolute; bottom: 0; width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 25px; font-size: 0.75rem; color: var(--text-muted); box-sizing: border-box; font-family:'Quicksand', sans-serif;">
+                    <div>Live Sensors: <b>OK (Active)</b></div>
+                    <div>Ref: OK-AIR PROJECT Study</div>
+                    <div>Last Sync: 6s ago</div>
+                </div>
+            </div>
+            <div id="footer-credits">OUHSC • Project OK-AIR © 2026</div>
+        </div>
+    </div>
+
+    <script>
+        // 數字跳動動畫函式
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // 3D 視差效果
+        const map = document.getElementById('active-map');
+        const viewport = document.getElementById('viewport');
+        viewport.addEventListener('mousemove', (e) => {
+            const rect = viewport.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = (y - centerY) / 30;
+            const rotateY = (centerX - x) / 30;
+            map.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+        viewport.addEventListener('mouseleave', () => {
+            map.style.transform = `rotateX(0deg) rotateY(0deg)`;
+        });
+
+        window.addEventListener('load', () => {
+            const shell = document.getElementById('gb-shell');
+            const buddy = document.getElementById('buddy-main-loader');
+            const splash = document.getElementById('splash-screen');
+            const app = document.getElementById('app-content');
+            const target = document.getElementById('logo-target');
+
+            setTimeout(() => {
+                shell.classList.add('gb-zoomed');
+                const targetRect = target.getBoundingClientRect();
+                const buddyRect = buddy.getBoundingClientRect();
+                const deltaX = targetRect.left - buddyRect.left + (targetRect.width/2 - buddyRect.width/2);
+                const deltaY = targetRect.top - buddyRect.top + (targetRect.height/2 - buddyRect.height/2);
+
+                buddy.style.transition = 'all 1.6s cubic-bezier(0.7, 0, 0.3, 1)';
+                buddy.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.55)`;
+                
+                setTimeout(() => {
+                    splash.style.opacity = '0';
+                    app.style.opacity = '1';
+                    
+                    // 進入系統後啟動數字動畫
+                    animateValue("val-outdoor", 0, 158, 2000);
+                    animateValue("val-indoor", 0, 12, 1500);
+
+                    setTimeout(() => {
+                        splash.style.display = 'none';
+                        buddy.style.transform = 'none';
+                        buddy.style.width = '100%';
+                        buddy.style.height = '100%';
+                        buddy.style.margin = '0';
+                        target.appendChild(buddy);
+                    }, 800);
+                }, 1000);
+
+            }, 3200);
+        });
+    </script>
+</body>
+</html>
