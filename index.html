@@ -38,7 +38,7 @@
             margin: 0;
         }
 
-        /* 1. GameBoy Splash Screen */
+        /* Splash */
         #splash-screen {
             position: fixed;
             top: 0;
@@ -83,10 +83,7 @@
         .gb-screen-area::before {
             content: " ";
             position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
+            inset: 0;
             background:
                 linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
                 linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
@@ -184,7 +181,7 @@
             filter: blur(10px);
         }
 
-        /* 2. Main Layout */
+        /* Layout */
         #app-content {
             display: flex;
             width: 100%;
@@ -408,6 +405,45 @@
             opacity: 0.7;
         }
 
+        .pill-tooltip {
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 10px);
+            transform: translateX(-50%) translateY(6px);
+            background: rgba(55, 53, 47, 0.96);
+            color: white;
+            border-radius: 12px;
+            padding: 10px 12px;
+            width: 180px;
+            font-size: 0.72rem;
+            line-height: 1.4;
+            font-weight: 600;
+            text-align: left;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 20;
+        }
+
+        .pill-tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 7px;
+            border-style: solid;
+            border-color: rgba(55, 53, 47, 0.96) transparent transparent transparent;
+        }
+
+        .data-pill:hover .pill-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
         .tts-btn {
             background: white;
             border: 2.5px solid var(--border-ink);
@@ -448,7 +484,6 @@
             to { height: 18px; }
         }
 
-        /* Tips */
         .tip-module {
             background: #FFFDF7;
             border-color: #E6C26A;
@@ -490,7 +525,7 @@
             line-height: 1.4;
         }
 
-        /* 3. Viewport & Map */
+        /* Map */
         #viewport {
             flex-grow: 1;
             position: relative;
@@ -606,6 +641,11 @@
             50% { transform: translateY(-12px) rotate(2deg); }
         }
 
+        @keyframes fire-flicker {
+            from { transform: scale(1) rotate(-5deg); }
+            to { transform: scale(1.2) rotate(5deg); }
+        }
+
         #footer-credits {
             position: absolute;
             bottom: 25px;
@@ -619,7 +659,6 @@
 </head>
 <body>
 
-    <!-- Splash Screen -->
     <div id="splash-screen">
         <div class="gameboy" id="gb-shell">
             <div class="gb-screen-area">
@@ -637,7 +676,6 @@
         </div>
     </div>
 
-    <!-- Main App -->
     <div id="app-content">
         <div id="sidebar">
             <div class="lang-switcher">
@@ -688,28 +726,37 @@
                         <span class="fire-symbol">🔥</span>
                     </div>
                     <div style="color: var(--color-huffy); font-size: 1.15rem; text-transform: uppercase; font-weight: 900; letter-spacing: 0.5px;" data-i18n="alert_title">Wildfire Smoke Alert!</div>
-                    <p style="font-size: 0.85rem; margin: 8px 0 0 0; font-weight: 600; color: var(--text-sub);" data-i18n="alert_desc">Huffy is visiting our area. Stay safe!</p>
+                    <p style="font-size: 0.85rem; margin: 8px 0 0 0; font-weight: 600; color: var(--text-sub);" data-i18n="alert_desc">Huffy is huffing smoke. Stay safe!</p>
                 </div>
 
                 <div class="module-card">
                     <div style="font-size: 0.95rem; font-weight: 800; border-bottom: 2px dashed #eee; padding-bottom: 12px; margin-bottom: 18px;">
                         📍 <span data-i18n="sensor_loc">Sensor at: Our Center</span>
                     </div>
+
                     <div class="aqi-pill-container">
                         <div class="data-pill" style="background:#FFF1F1; border-color:var(--color-huffy); color:var(--color-huffy);">
                             <span class="pill-label" data-i18n="outdoor">Outdoor</span>
                             <span class="pill-value" id="val-outdoor">0</span>
                             <span class="pill-unit">µg/m³</span>
                             <img src="Huffy.png" alt="Huffy" class="pill-img" onerror="this.style.display='none'">
+                            <div class="pill-tooltip" data-i18n="tooltip_outdoor">
+                                This outdoor air level is very unhealthy and may trigger smoke-related symptoms in young children.
+                            </div>
                         </div>
+
                         <div class="data-pill" style="background:#F2FAF4; border-color:var(--color-puffy); color:var(--color-puffy);">
                             <span class="pill-label" data-i18n="indoor">Indoor</span>
                             <span class="pill-value" id="val-indoor">0</span>
                             <span class="pill-unit">µg/m³</span>
                             <img src="Puffy.png" alt="Puffy" class="pill-img" onerror="this.style.display='none'">
                             <img src="Sparkles.png" alt="S" class="sparkle-decor" onerror="this.style.display='none'">
+                            <div class="pill-tooltip" data-i18n="tooltip_indoor">
+                                Indoor air is much cleaner than outdoors, showing that the HEPA filtration is protecting the classroom.
+                            </div>
                         </div>
                     </div>
+
                     <div style="background:var(--bg-page); border:2.5px dashed var(--border-ink); border-radius:12px; padding:12px; text-align:center; font-size:0.9rem; font-weight:700; color:var(--text-sub);">
                         🛡️ <span data-i18n="eff_label">Protection Efficiency: 92% cleaner</span>
                     </div>
@@ -751,6 +798,7 @@
 
         <div id="viewport">
             <div class="map-header-caption">📡 <span data-i18n="map_caption">Real-time Wildfire Smoke Plume from Weather Radar</span></div>
+
             <div id="active-map">
                 <canvas id="smoke-canvas"></canvas>
                 <div class="plume-callout-sticker" data-i18n="plume_label">Active Smoke Plume (Real-time)</div>
@@ -765,6 +813,7 @@
                     <div class="sticker-label" data-i18n="map_epa_label">EPA Station</div>
                 </div>
             </div>
+
             <div id="footer-credits">OUHSC • Project OK-AIR © 2026</div>
         </div>
     </div>
@@ -795,7 +844,9 @@
                 map_epa_label: "EPA Station",
                 tip_title: "Huffy's Air Fact",
                 tip_desc: "Preschoolers breathe more air per pound of body weight than adults, making filtration critical during wildfire events.",
-                tip_ref: "Source: EPA Healthy Schools Initiative"
+                tip_ref: "Source: EPA Healthy Schools Initiative",
+                tooltip_outdoor: "May cause coughing, throat irritation, and breathing discomfort, especially in young children.",
+                tooltip_indoor: "Much safer for daily breathing and helps reduce exposure to harmful particles, especially for young children."
             },
             es: {
                 app_title: "OK-AIR",
@@ -821,7 +872,9 @@
                 map_epa_label: "Estación EPA",
                 tip_title: "Dato del aire de Huffy",
                 tip_desc: "Los niños en edad preescolar respiran más aire por libra de peso corporal que los adultos, por lo que la filtración es fundamental durante los incendios forestales.",
-                tip_ref: "Fuente: Iniciativa de Escuelas Saludables de la EPA"
+                tip_ref: "Fuente: Iniciativa de Escuelas Saludables de la EPA",
+                tooltip_outdoor: "Puede causar tos, irritación de garganta y dificultad para respirar, especialmente en niños pequeños.",
+                tooltip_indoor: "Es mucho más seguro para la respiración diaria y ayuda a reducir la exposición a partículas dañinas, especialmente en niños pequeños."
             },
             vi: {
                 app_title: "OK-AIR",
@@ -847,7 +900,9 @@
                 map_epa_label: "Trạm EPA",
                 tip_title: "Thông tin không khí từ Huffy",
                 tip_desc: "Trẻ mầm non hít thở nhiều không khí hơn trên mỗi pound trọng lượng cơ thể so với người lớn, vì vậy lọc không khí đặc biệt quan trọng trong mùa cháy rừng.",
-                tip_ref: "Nguồn: Sáng kiến Trường học Khỏe mạnh của EPA"
+                tip_ref: "Nguồn: Sáng kiến Trường học Khỏe mạnh của EPA",
+                tooltip_outdoor: "Có thể gây ho, kích ứng cổ họng và khó thở, đặc biệt ở trẻ nhỏ.",
+                tooltip_indoor: "An toàn hơn nhiều cho việc hít thở hằng ngày và giúp giảm tiếp xúc với các hạt có hại, đặc biệt ở trẻ nhỏ."
             },
             zh: {
                 app_title: "OK-AIR 计划",
@@ -873,7 +928,9 @@
                 map_epa_label: "EPA 监测站",
                 tip_title: "Huffy 的空气小知识",
                 tip_desc: "学龄前儿童按体重计算的呼吸量比成年人更高，因此在野火事件期间，空气过滤尤其重要。",
-                tip_ref: "来源：EPA 健康学校计划"
+                tip_ref: "来源：EPA 健康学校计划",
+                tooltip_outdoor: "可能引起咳嗽、喉咙刺激和呼吸不适，幼儿尤其更容易受到影响。",
+                tooltip_indoor: "更适合日常呼吸，并有助于减少有害颗粒暴露，尤其对幼儿更有保护作用。"
             }
         };
 
@@ -889,9 +946,7 @@
                 }
             });
 
-            document.querySelectorAll('.lang-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
 
             const activeBtn = Array.from(document.querySelectorAll('.lang-btn')).find(btn => {
                 const text = btn.innerText.trim().toLowerCase();
@@ -1024,5 +1079,4 @@
         }
     </script>
 </body>
-</html>
 </html>
